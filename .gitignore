@@ -1,0 +1,7 @@
+node_modules
+.next
+data/budget.json
+.env.local
+android/.gradle
+android/app/build
+android/local.properties
