@@ -14,7 +14,7 @@ const config: CapacitorConfig = {
   webDir: 'mobile-shell',
   server: {
     // TODO: replace with your real deployed URL, e.g. "https://monthly-ledger.vercel.app"
-    url: 'https://pthy-monthly-budget-dfev9wss9-vuthy2.vercel.app/',
+    url: 'https://pthy-monthly-budget-app.vercel.app',
     cleartext: false,
   },
 };

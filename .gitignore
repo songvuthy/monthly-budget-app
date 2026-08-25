@@ -1,6 +1,11 @@
 node_modules
 .next
 data/budget.json
+data/local.db
+data/local.db-wal
+data/local.db-shm
+.env.local
+.firebase
 android/.gradle
 android/app/build
 android/local.properties
