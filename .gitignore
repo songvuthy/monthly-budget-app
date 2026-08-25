@@ -9,3 +9,5 @@ data/local.db-shm
 android/.gradle
 android/app/build
 android/local.properties
+.vercel
+.env*
