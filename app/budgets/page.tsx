@@ -70,9 +70,9 @@ export default function BudgetsPage() {
         <div className="budget-row-head">
           <span className="tag" style={indent ? undefined : { fontWeight: 600 }}>
             <span className="dot" style={{ background: c.color }} />
-            {label ?? c.name}
+            <span className="tag-label">{label ?? c.name}</span>
           </span>
-          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <span className="row-trailing">
             {limit > 0 && <span className={`pct-pill ${over ? "over" : ""}`}>{Math.round(pct)}%</span>}
             <span className="figure">
               {formatCurrency(spent)}
@@ -155,9 +155,9 @@ export default function BudgetsPage() {
                 <div className="budget-row-head">
                   <span className="tag" style={{ fontWeight: 600 }}>
                     <span className="dot" style={{ background: category.color }} />
-                    {category.name} — total
+                    <span className="tag-label">{category.name} — total</span>
                   </span>
-                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span className="row-trailing">
                     {totalLimit > 0 && (
                       <span className={`pct-pill ${over ? "over" : ""}`}>{Math.round((totalSpent / totalLimit) * 100)}%</span>
                     )}

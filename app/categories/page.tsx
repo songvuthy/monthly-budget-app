@@ -233,10 +233,10 @@ export default function CategoriesPage() {
                 {editId === category.id ? (
                   <EditRow c={category} />
                 ) : (
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
                     <span className="tag" style={{ fontWeight: 600 }}>
                       <span className="dot" style={{ background: category.color }} />
-                      {category.name}
+                      <span className="tag-label">{category.name}</span>
                     </span>
                     <button className="icon-btn" onClick={() => startEdit(category)} aria-label={`Edit ${category.name}`}>
                       <EditIcon />
@@ -252,10 +252,10 @@ export default function CategoriesPage() {
                       {editId === child.id ? (
                         <EditRow c={child} />
                       ) : (
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 10 }}>
                           <span className="tag">
                             <span className="dot" style={{ background: child.color }} />
-                            {child.name}
+                            <span className="tag-label">{child.name}</span>
                           </span>
                           <button className="icon-btn" onClick={() => startEdit(child)} aria-label={`Edit ${child.name}`}>
                             <EditIcon />

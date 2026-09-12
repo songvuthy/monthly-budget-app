@@ -151,9 +151,9 @@ export default function DashboardPage() {
                   <div className="budget-row-head">
                     <span className="tag" style={{ fontWeight: 600 }}>
                       <span className="dot" style={{ background: category.color }} />
-                      {category.name}
+                      <span className="tag-label">{category.name}</span>
                     </span>
-                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span className="row-trailing">
                       {totalLimit > 0 && (
                         <span className={`pct-pill ${over ? "over" : ""}`}>{Math.round((totalSpent / totalLimit) * 100)}%</span>
                       )}
@@ -179,9 +179,9 @@ export default function DashboardPage() {
                           <div className="budget-row-head">
                             <span className="tag">
                               <span className="dot" style={{ background: row.category.color }} />
-                              {row.category.name}
+                              <span className="tag-label">{row.category.name}</span>
                             </span>
-                            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span className="row-trailing">
                               {row.limit > 0 && (
                                 <span className={`pct-pill ${childOver ? "over" : ""}`}>
                                   {Math.round((row.spent / row.limit) * 100)}%
