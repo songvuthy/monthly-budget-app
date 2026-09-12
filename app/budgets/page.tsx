@@ -66,15 +66,18 @@ export default function BudgetsPage() {
     const over = limit > 0 && spent > limit;
 
     return (
-      <div className="budget-row" style={indent ? { paddingLeft: 20, borderLeft: "1px dashed var(--line-strong)", marginLeft: 4 } : undefined}>
+      <div className="budget-row">
         <div className="budget-row-head">
           <span className="tag" style={indent ? undefined : { fontWeight: 600 }}>
             <span className="dot" style={{ background: c.color }} />
             {label ?? c.name}
           </span>
-          <span className="figure">
-            {formatCurrency(spent)}
-            {limit > 0 && <span style={{ color: "var(--ink-soft)" }}> / {formatCurrency(limit)}</span>}
+          <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            {limit > 0 && <span className={`pct-pill ${over ? "over" : ""}`}>{Math.round(pct)}%</span>}
+            <span className="figure">
+              {formatCurrency(spent)}
+              {limit > 0 && <span style={{ color: "var(--ink-soft)" }}> / {formatCurrency(limit)}</span>}
+            </span>
           </span>
         </div>
         <div className="tally" style={{ marginBottom: 10 }}>
@@ -83,17 +86,20 @@ export default function BudgetsPage() {
         <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
           <div className="field" style={{ flexDirection: "row", alignItems: "center", gap: 6 }}>
             <label htmlFor={`limit-${c.id}`} style={{ marginBottom: 0 }}>
-              Limit $
+              Limit
             </label>
-            <input
-              id={`limit-${c.id}`}
-              className="budget-limit-input"
-              type="number"
-              min="0"
-              step="1"
-              value={drafts[c.id] ?? ""}
-              onChange={(e) => setDrafts((prev) => ({ ...prev, [c.id]: e.target.value }))}
-            />
+            <span className="input-prefix">
+              <span className="prefix-sign">$</span>
+              <input
+                id={`limit-${c.id}`}
+                className="budget-limit-input"
+                type="number"
+                min="0"
+                step="1"
+                value={drafts[c.id] ?? ""}
+                onChange={(e) => setDrafts((prev) => ({ ...prev, [c.id]: e.target.value }))}
+              />
+            </span>
           </div>
           <button
             className="submit-btn"
@@ -114,7 +120,7 @@ export default function BudgetsPage() {
     <PageShell>
       <section className="card">
         <h2>Monthly budgets</h2>
-        <p style={{ fontSize: 14, color: "var(--ink-soft)", marginTop: -8, marginBottom: 20 }}>
+        <p className="hint">
           Set a monthly limit per category or sub-category. The tally fills as you spend, and turns
           to warn you once you cross the line.
         </p>
@@ -122,7 +128,8 @@ export default function BudgetsPage() {
         {loading ? (
           <p className="empty-state">Loading…</p>
         ) : (
-          tree.map(({ category, children }) => {
+          <div className="category-grid">
+          {tree.map(({ category, children }) => {
             // Roll up spend/limit across children into the parent header row,
             // then show each child's own tally underneath.
             const ownSpent = spentByCategory.get(category.id) ?? 0;
@@ -133,36 +140,48 @@ export default function BudgetsPage() {
             const totalLimit = ownLimit + childLimit;
 
             if (children.length === 0) {
-              return <Row key={category.id} c={category} />;
+              return (
+                <div className="category-cluster" key={category.id}>
+                  <Row c={category} />
+                </div>
+              );
             }
 
             const pct = totalLimit > 0 ? Math.min(100, (totalSpent / totalLimit) * 100) : 0;
             const over = totalLimit > 0 && totalSpent > totalLimit;
 
             return (
-              <div key={category.id} style={{ marginBottom: 8 }}>
-                <div className="budget-row-head" style={{ marginTop: 12 }}>
+              <div className="category-cluster wide" key={category.id}>
+                <div className="budget-row-head">
                   <span className="tag" style={{ fontWeight: 600 }}>
                     <span className="dot" style={{ background: category.color }} />
                     {category.name} — total
                   </span>
-                  <span className="figure">
-                    {formatCurrency(totalSpent)}
+                  <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     {totalLimit > 0 && (
-                      <span style={{ color: "var(--ink-soft)" }}> / {formatCurrency(totalLimit)}</span>
+                      <span className={`pct-pill ${over ? "over" : ""}`}>{Math.round((totalSpent / totalLimit) * 100)}%</span>
                     )}
+                    <span className="figure">
+                      {formatCurrency(totalSpent)}
+                      {totalLimit > 0 && (
+                        <span style={{ color: "var(--ink-soft)" }}> / {formatCurrency(totalLimit)}</span>
+                      )}
+                    </span>
                   </span>
                 </div>
-                <div className="tally" style={{ marginBottom: 12 }}>
+                <div className="tally" style={{ marginBottom: 4 }}>
                   <div className={`tally-fill ${over ? "over" : ""}`} style={{ width: `${pct}%` }} />
                 </div>
-                <Row c={category} indent label={`${category.name} (general)`} />
-                {children.map((child) => (
-                  <Row key={child.id} c={child} indent />
-                ))}
+                <div className="subgroup">
+                  <Row c={category} indent label={`${category.name} (general)`} />
+                  {children.map((child) => (
+                    <Row key={child.id} c={child} indent />
+                  ))}
+                </div>
               </div>
             );
-          })
+          })}
+          </div>
         )}
       </section>
     </PageShell>

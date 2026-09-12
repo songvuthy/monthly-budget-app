@@ -104,72 +104,62 @@ export default function CategoriesPage() {
     await load();
   }
 
-  function ColorPicker({ value, onChange, size = 22 }: { value: string; onChange: (c: string) => void; size?: number }) {
+  function ColorPicker({ value, onChange }: { value: string; onChange: (c: string) => void }) {
     return (
-      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
         {swatches.map((s) => (
           <button
             type="button"
             key={s}
+            className={`swatch ${value === s ? "selected" : ""}`}
             onClick={() => onChange(s)}
-            style={{
-              width: size,
-              height: size,
-              borderRadius: "50%",
-              background: s,
-              border: value === s ? "2px solid var(--ink)" : "1px solid var(--line-strong)",
-              cursor: "pointer",
-            }}
+            style={{ background: s }}
             aria-label={`Choose color ${s}`}
+            aria-pressed={value === s}
           />
         ))}
       </div>
     );
   }
 
+  function EditIcon() {
+    return (
+      <svg width="15" height="15" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path
+          d="M13.5 3.5l3 3L6 17l-3.6.9L3.3 14.3 13.5 3.5z"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeLinejoin="round"
+          strokeLinecap="round"
+        />
+      </svg>
+    );
+  }
+
   function EditRow({ c }: { c: Category }) {
     return (
       <div style={{ display: "flex", gap: 10, alignItems: "center", flexWrap: "wrap" }}>
-        <input
-          type="text"
-          value={editName}
-          onChange={(e) => setEditName(e.target.value)}
-          style={{
-            fontFamily: "inherit",
-            fontSize: 14,
-            padding: "9px 10px",
-            border: "1px solid var(--line-strong)",
-            borderRadius: 3,
-            background: "var(--paper)",
-          }}
-        />
-        <ColorPicker value={editColor} onChange={setEditColor} size={20} />
-        <select
-          value={editParentId}
-          onChange={(e) => setEditParentId(e.target.value)}
-          style={{
-            fontFamily: "inherit",
-            fontSize: 13,
-            padding: "8px 10px",
-            border: "1px solid var(--line-strong)",
-            borderRadius: 3,
-            background: "var(--paper)",
-          }}
-        >
-          <option value="">— Top-level category —</option>
-          {topLevelCategories
-            .filter((p) => p.id !== c.id)
-            .map((p) => (
-              <option key={p.id} value={p.id}>
-                Sub-category of {p.name}
-              </option>
-            ))}
-        </select>
+        <div className="field" style={{ maxWidth: 180 }}>
+          <input type="text" value={editName} onChange={(e) => setEditName(e.target.value)} />
+        </div>
+        <ColorPicker value={editColor} onChange={setEditColor} />
+        <div className="field">
+          <select value={editParentId} onChange={(e) => setEditParentId(e.target.value)}>
+            <option value="">— Top-level category —</option>
+            {topLevelCategories
+              .filter((p) => p.id !== c.id)
+              .map((p) => (
+                <option key={p.id} value={p.id}>
+                  Sub-category of {p.name}
+                </option>
+              ))}
+          </select>
+        </div>
         <button className="submit-btn" style={{ padding: "6px 14px" }} onClick={() => saveEdit(c.id)} disabled={saving}>
           {saving ? "Saving…" : "Save"}
         </button>
-        <button className="delete-btn" onClick={cancelEdit}>
-          cancel
+        <button className="link-pill" onClick={cancelEdit}>
+          Cancel
         </button>
         {editError && <p style={{ color: "var(--rust-warn)", fontSize: 12, width: "100%" }}>{editError}</p>}
       </div>
@@ -211,14 +201,19 @@ export default function CategoriesPage() {
               {creating ? "Adding…" : "Add category"}
             </button>
           </div>
-          <div style={{ marginTop: 12 }}>
+          <div style={{ marginTop: 16 }}>
             <span className="eyebrow">Color</span>
-            <ColorPicker value={newColor} onChange={setNewColor} />
+            <div style={{ marginTop: 8 }}>
+              <ColorPicker value={newColor} onChange={setNewColor} />
+            </div>
           </div>
           {error && (
             <p style={{ color: "var(--rust-warn)", fontSize: 13, marginTop: 10 }}>{error}</p>
           )}
         </form>
+        <p className="hint" style={{ marginBottom: 0 }}>
+          Categories nest one level deep — pick a parent above to add a sub-category.
+        </p>
       </section>
 
       <section className="card">
@@ -226,26 +221,34 @@ export default function CategoriesPage() {
         {loading ? (
           <p className="empty-state">Loading…</p>
         ) : (
-          tree.map(({ category, children }) => (
-            <div className="budget-row" key={category.id}>
-              {editId === category.id ? (
-                <EditRow c={category} />
-              ) : (
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                  <span className="tag" style={{ fontWeight: 600 }}>
-                    <span className="dot" style={{ background: category.color }} />
-                    {category.name}
-                  </span>
-                  <button className="delete-btn" onClick={() => startEdit(category)}>
-                    edit
-                  </button>
-                </div>
-              )}
+          <div className="category-grid">
+          {tree.map(({ category, children }) => {
+            const isEditingHere = editId === category.id || children.some((c) => c.id === editId);
+            return (
+            <div
+              className={`category-cluster ${children.length > 0 ? "wide" : ""} ${isEditingHere ? "editing" : ""}`}
+              key={category.id}
+            >
+              <div className="budget-row">
+                {editId === category.id ? (
+                  <EditRow c={category} />
+                ) : (
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span className="tag" style={{ fontWeight: 600 }}>
+                      <span className="dot" style={{ background: category.color }} />
+                      {category.name}
+                    </span>
+                    <button className="icon-btn" onClick={() => startEdit(category)} aria-label={`Edit ${category.name}`}>
+                      <EditIcon />
+                    </button>
+                  </div>
+                )}
+              </div>
 
               {children.length > 0 && (
-                <div style={{ marginTop: 10, paddingLeft: 20, borderLeft: "1px dashed var(--line-strong)" }}>
+                <div className="subgroup">
                   {children.map((child) => (
-                    <div key={child.id} style={{ padding: "8px 0" }}>
+                    <div className="budget-row" key={child.id}>
                       {editId === child.id ? (
                         <EditRow c={child} />
                       ) : (
@@ -254,8 +257,8 @@ export default function CategoriesPage() {
                             <span className="dot" style={{ background: child.color }} />
                             {child.name}
                           </span>
-                          <button className="delete-btn" onClick={() => startEdit(child)}>
-                            edit
+                          <button className="icon-btn" onClick={() => startEdit(child)} aria-label={`Edit ${child.name}`}>
+                            <EditIcon />
                           </button>
                         </div>
                       )}
@@ -264,7 +267,9 @@ export default function CategoriesPage() {
                 </div>
               )}
             </div>
-          ))
+            );
+          })}
+          </div>
         )}
       </section>
     </PageShell>

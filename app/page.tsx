@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import PageShell from "@/components/PageShell";
 import type { Budget, Category, Transaction } from "@/lib/db";
 import { formatCurrency, currentMonthRange } from "@/lib/format";
@@ -110,18 +111,18 @@ export default function DashboardPage() {
           <button className="submit-btn" style={{ padding: "9px 16px" }} onClick={applyFilter}>
             Filter
           </button>
-          <button className="delete-btn" style={{ padding: "9px 4px", textDecoration: "underline" }} onClick={resetToThisMonth}>
+          <button className="link-pill" onClick={resetToThisMonth}>
             This month
           </button>
         </div>
 
         <div className="summary-grid">
           <div className="stat positive">
-            <span className="eyebrow">Income</span>
+            <span className="eyebrow">▲ Income</span>
             <span className="figure">{formatCurrency(income)}</span>
           </div>
           <div className="stat negative">
-            <span className="eyebrow">Spent</span>
+            <span className="eyebrow">▼ Spent</span>
             <span className="figure">{formatCurrency(expenses)}</span>
           </div>
           <div className={`stat ${net >= 0 ? "positive" : "negative"}`}>
@@ -140,22 +141,28 @@ export default function DashboardPage() {
             No spending logged for this range. Add a transaction in the Register to see it here.
           </p>
         ) : (
-          breakdownRows.map(({ category, totalSpent, totalLimit, childRows }) => {
+          <div className="category-grid">
+          {breakdownRows.map(({ category, totalSpent, totalLimit, childRows }) => {
             const pct = totalLimit > 0 ? Math.min(100, (totalSpent / totalLimit) * 100) : 0;
             const over = totalLimit > 0 && totalSpent > totalLimit;
             return (
-              <div key={category.id}>
+              <div className={`category-cluster ${childRows.length > 0 ? "wide" : ""}`} key={category.id}>
                 <div className="budget-row">
                   <div className="budget-row-head">
                     <span className="tag" style={{ fontWeight: 600 }}>
                       <span className="dot" style={{ background: category.color }} />
                       {category.name}
                     </span>
-                    <span className="figure">
-                      {formatCurrency(totalSpent)}
+                    <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                       {totalLimit > 0 && (
-                        <span style={{ color: "var(--ink-soft)" }}> / {formatCurrency(totalLimit)}</span>
+                        <span className={`pct-pill ${over ? "over" : ""}`}>{Math.round((totalSpent / totalLimit) * 100)}%</span>
                       )}
+                      <span className="figure">
+                        {formatCurrency(totalSpent)}
+                        {totalLimit > 0 && (
+                          <span style={{ color: "var(--ink-soft)" }}> / {formatCurrency(totalLimit)}</span>
+                        )}
+                      </span>
                     </span>
                   </div>
                   <div className="tally">
@@ -163,7 +170,7 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 {childRows.length > 0 && (
-                  <div style={{ paddingLeft: 20, borderLeft: "1px dashed var(--line-strong)", marginLeft: 4, marginBottom: 8 }}>
+                  <div className="subgroup">
                     {childRows.map((row) => {
                       const childPct = row.limit > 0 ? Math.min(100, (row.spent / row.limit) * 100) : 0;
                       const childOver = row.limit > 0 && row.spent > row.limit;
@@ -174,11 +181,18 @@ export default function DashboardPage() {
                               <span className="dot" style={{ background: row.category.color }} />
                               {row.category.name}
                             </span>
-                            <span className="figure">
-                              {formatCurrency(row.spent)}
+                            <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
                               {row.limit > 0 && (
-                                <span style={{ color: "var(--ink-soft)" }}> / {formatCurrency(row.limit)}</span>
+                                <span className={`pct-pill ${childOver ? "over" : ""}`}>
+                                  {Math.round((row.spent / row.limit) * 100)}%
+                                </span>
                               )}
+                              <span className="figure">
+                                {formatCurrency(row.spent)}
+                                {row.limit > 0 && (
+                                  <span style={{ color: "var(--ink-soft)" }}> / {formatCurrency(row.limit)}</span>
+                                )}
+                              </span>
                             </span>
                           </div>
                           <div className="tally">
@@ -191,7 +205,8 @@ export default function DashboardPage() {
                 )}
               </div>
             );
-          })
+          })}
+          </div>
         )}
         <p style={{ marginTop: 16 }}>
           <span className="eyebrow">Total monthly budget (all categories)</span>
@@ -202,7 +217,12 @@ export default function DashboardPage() {
       </section>
 
       <section className="card">
-        <h2>Recent entries</h2>
+        <div className="section-head">
+          <h2>Recent entries</h2>
+          <Link href="/transactions" className="link-pill">
+            View all →
+          </Link>
+        </div>
         {loading ? (
           <p className="empty-state">Loading…</p>
         ) : recentTx.length === 0 ? (
